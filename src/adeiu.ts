@@ -1,3 +1,6 @@
+import chalk from 'chalk';
+
+
 /**
  * Signature of callbacks provided to `adeiu`.
  */
@@ -22,9 +25,29 @@ const callbacks = new Set<AdeiuCallback>();
 
 
 /**
- * Tracks whether we have registered our signal-handler.
+ * Provided an Adeiu callback and an error it threw, logs the error to standard
+ * error.
+ *
+ * @example
+ *
+ * const myCallback = () => {
+ *   throw new TypeError('Oh noes!');
+ * };
+ *
+ * ```
+ * Error: [adeiu] Callback `myCallback` threw: TypeError: Oh noes!
+ *   at myCallback (/Users/foo/bar.js:42:3)
+ * ```
  */
-let handlerRegistered = false;
+function writeErrorToSterr(cb: AdeiuCallback, err?: Error) {
+  if (err && err.stack) {
+    const errType = err.constructor ? err.constructor.name : 'Error';
+    const cbName = cb.name ? `Callback  \`${cb.name}\`` : 'Anonymous callback';
+    const stackLines = err.stack.split('\n');
+    stackLines[0] = `${chalk.red(`Error: [adeiu] ${cbName} threw:`)} ${errType}: ${err.message}`;
+    process.stderr.write(`${stackLines.join('\n')}\n`);
+  }
+}
 
 
 /**
@@ -43,6 +66,7 @@ async function handler(signal: NodeJS.Signals) {
       await cb(signal);
       return true;
     } catch (err) {
+      writeErrorToSterr(cb, err);
       return false;
     }
   }));
@@ -66,17 +90,17 @@ async function handler(signal: NodeJS.Signals) {
  * Returns a function that, when invoked, will unregister the callback.
  */
 export default function adeiu(cb: AdeiuCallback) {
-  if (!handlerRegistered) {
-    SIGNALS.forEach(signal => {
-      process.once(signal, handler);
-    });
-
-    handlerRegistered = true;
+  if (callbacks.size === 0) {
+    SIGNALS.forEach(signal => process.once(signal, handler));
   }
 
   callbacks.add(cb);
 
   return () => {
     callbacks.delete(cb);
+
+    if (callbacks.size === 0) {
+      SIGNALS.forEach(signal => process.off(signal, handler));
+    }
   };
 }

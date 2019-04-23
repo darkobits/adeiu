@@ -42,3 +42,30 @@ const annuler = adeiu(async signal => {
 // Unregister the callack.
 annuler();
 ```
+
+## Advanced Usage
+
+Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument passed to your callback. However, if it is important that listeners are _only_ installed on a particular signal, you may optionally provide a custom array of signals to assign a callback to:
+
+```ts
+import adeiu from '@darkobits/adeiu';
+
+// Handles SIGINT only.
+const sigintCallback = async () => {
+  // SIGINT cleanup tasks.
+};
+
+// Handles SIGTERM only.
+const sigintCallback = async () => {
+  // SIGTERM cleanup tasks.
+};
+
+adeiu(sigintCallback, ['SIGINT']);
+adeiu(sigtermCallback, ['SIGTERM']);
+```
+
+## &nbsp;
+<p align="center">
+  <br>
+  <img width="24" height="24" src="https://cloud.githubusercontent.com/assets/441546/25318539/db2f4cf2-2845-11e7-8e10-ef97d91cd538.png">
+</p>

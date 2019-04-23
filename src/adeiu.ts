@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import ow from 'ow';
 
 
 /**
@@ -8,9 +9,22 @@ export type AdeiuCallback = (signal: NodeJS.Signals) => void | Promise<void>;
 
 
 /**
- * List of POSIX signals to register handlers for.
+ * Optional options object that may be passed to Adeiu.
  */
-const SIGNALS: Array<NodeJS.Signals> = [
+export interface AdeiuOptions {
+  /**
+   * (Optional) Array of signals that the provided callback should be invoked
+   * for. These signals are _not_ merged with the defaults, so each desired
+   * signal must be explicitly enumerated.
+   */
+  signals?: Array<NodeJS.Signals>;
+}
+
+
+/**
+ * List of POSIX signals to register handlers for by default.
+ */
+export const SIGNALS: Array<NodeJS.Signals> = [
   'SIGINT',
   'SIGQUIT',
   'SIGTERM',
@@ -19,9 +33,9 @@ const SIGNALS: Array<NodeJS.Signals> = [
 
 
 /**
- * Tracks registered callbcks.
+ * Tracks which user callbacks are associated with a particular signal.
  */
-const callbacks = new Set<AdeiuCallback>();
+const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>();
 
 
 /**
@@ -56,12 +70,18 @@ function writeErrorToSterr(cb: AdeiuCallback, err?: Error) {
  * process will exit with code 0 via the signal we received.
  */
 async function handler(signal: NodeJS.Signals) {
-  const callbackFns = Array.from(callbacks.values());
+  const callbacksForSignal = signalCallbacks.get(signal);
+
+  // If this occurs, it means there is an error in our handler (un)installation
+  // logic.
+  if (!callbacksForSignal || callbacksForSignal.length === 0) {
+    throw new Error(`Unexpected error: Expected at least 1 callback for signal ${signal}, but found none.`);
+  }
 
   // Map our array of functions into an array of promises that will resolve with
   // `true` if the function returns/resolves and `false` if the function throws
   // or rejects.
-  const results = await Promise.all(callbackFns.map(async cb => {
+  const results = await Promise.all(callbacksForSignal.map(async cb => {
     try {
       await cb(signal);
       return true;
@@ -89,18 +109,44 @@ async function handler(signal: NodeJS.Signals) {
  *
  * Returns a function that, when invoked, will unregister the callback.
  */
-export default function adeiu(cb: AdeiuCallback) {
-  if (callbacks.size === 0) {
-    SIGNALS.forEach(signal => process.once(signal, handler));
-  }
+export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = {}) {
+  // Validate options.
+  ow(signals, 'signals', ow.array);
 
-  callbacks.add(cb);
+  // If the user provided a custom list of signals, use it. Otherwise, use the
+  // default list.
+  const finalSignals = signals.length > 0 ? signals : SIGNALS;
+
+  finalSignals.forEach(signal => {
+    const callbacksForSignal = signalCallbacks.get(signal);
+
+    if (!callbacksForSignal || callbacksForSignal.length === 0) {
+      // Since this is also the first callback being registered for this signal,
+      // install our handler for it.
+      signalCallbacks.set(signal, [cb]);
+      process.once(signal, handler);
+    } else {
+      signalCallbacks.set(signal, [...callbacksForSignal, cb]);
+    }
+  });
 
   return () => {
-    callbacks.delete(cb);
+    finalSignals.forEach(signal => {
+      const callbacksForSignal = signalCallbacks.get(signal);
 
-    if (callbacks.size === 0) {
-      SIGNALS.forEach(signal => process.off(signal, handler));
-    }
+      if (!callbacksForSignal || callbacksForSignal.length === 0) {
+        // User may have alreay called this function previously.
+        return;
+      }
+
+      if (callbacksForSignal.length === 1 && callbacksForSignal[0] === cb) {
+        // This means we are un-registering the last remaining callback for this
+        // signal, so we should uninstall our handler.
+        signalCallbacks.set(signal, []);
+        process.off(signal, handler);
+      } else {
+        signalCallbacks.set(signal, callbacksForSignal.filter(curCallback => curCallback !== cb));
+      }
+    });
   };
 }

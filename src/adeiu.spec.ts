@@ -3,35 +3,29 @@ import pWaitFor from 'p-wait-for';
 
 
 describe('adeiu', () => {
+  const emitter = new Emittery();
+
   let adeiu: Function;
-  let emitter: Emittery;
-  let exitSpy: any;
-  let killSpy: any;
-  let offSpy: any;
-  let onceSpy: any;
-  let stdErrWriteSpy: any;
 
+  const exitSpy = jest.spyOn(process, 'exit');
+  const killSpy = jest.spyOn(process, 'kill');
+  const offSpy = jest.spyOn(process, 'off');
+  const onceSpy = jest.spyOn(process, 'once');
+  const stdErrWriteSpy = jest.spyOn(process.stderr, 'write');
 
+  // Because we're mocking `process`, we need to do so just before our tests. As
+  // such, we also need to import the module being tested _after_ these mocks
+  // have been set up to ensure the module gets the mocked version.
   beforeEach(() => {
-    emitter = new Emittery();
+    emitter.clearListeners();
 
-    exitSpy = jest.spyOn(process, 'exit').mockImplementation(code => {
-      return undefined as never;
-    });
+    exitSpy.mockImplementation(code => undefined as never);
+    killSpy.mockImplementation((pid, signal) => true);
+    stdErrWriteSpy.mockImplementation(data => true);
 
-    killSpy = jest.spyOn(process, 'kill').mockImplementation((pid, signal) => {
-      return;
-    });
-
-    offSpy = jest.spyOn(process, 'off');
-
-    onceSpy = jest.spyOn(process, 'once').mockImplementation((eventName: string, listener: Function) => {
+    onceSpy.mockImplementation((eventName: string, listener: Function) => {
       emitter.once(eventName).then(() => listener(eventName)); // tslint:disable-line no-floating-promises
       return process;
-    });
-
-    stdErrWriteSpy = jest.spyOn(process.stderr, 'write').mockImplementation(data => {
-      return true;
     });
 
     adeiu = require('./adeiu').default; // tslint:disable-line no-require-imports
@@ -69,6 +63,48 @@ describe('adeiu', () => {
 
     afterEach(() => {
       unregister();
+    });
+  });
+
+  describe('registering with custom signals', () => {
+    const signal = 'SIGFOO';
+    const callback = jest.fn();
+    const otherCallback = jest.fn();
+
+    it('should install the adeiu handler when the first user callback is registered', () => {
+      expect(onceSpy).not.toHaveBeenCalled();
+
+      // Register the first callback for this signal.
+      adeiu(callback, {signals: [signal]});
+
+      // Assert that we installed the handler.
+      expect(onceSpy.mock.calls[0][0]).toBe(signal);
+
+      // Register another callback on the same signal.
+      adeiu(otherCallback, {signals: [signal]});
+
+      // Assert that we did not call process.once again.
+      expect(onceSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should uninstall the adeiu handler when the last user callback is unregistered', () => {
+      expect(offSpy).not.toHaveBeenCalled();
+
+      // Register both callbacks this signal.
+      const unregister = adeiu(callback, {signals: [signal]});
+      const unregisterOther = adeiu(otherCallback, {signals: [signal]});
+
+      // Unregister the first callback.
+      unregister();
+
+      // Assert that we didn't uninstall the handler.
+      expect(offSpy).not.toHaveBeenCalled();
+
+      // Uninstall the second handler.
+      unregisterOther();
+
+      // Assert that we uninstalled the handler for the signal.
+      expect(offSpy.mock.calls[0][0]).toBe(signal);
     });
   });
 
@@ -122,5 +158,6 @@ describe('adeiu', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    jest.resetModuleRegistry();
   });
 });

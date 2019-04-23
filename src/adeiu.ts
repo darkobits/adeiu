@@ -9,7 +9,7 @@ export type AdeiuCallback = (signal: NodeJS.Signals) => void | Promise<void>;
 
 
 /**
- * Optional options object that may be passed to Adeiu.
+ * Optional options object that may be passed to `adeiu`.
  */
 export interface AdeiuOptions {
   /**
@@ -22,7 +22,7 @@ export interface AdeiuOptions {
 
 
 /**
- * List of POSIX signals to register handlers for by default.
+ * List of default POSIX signals to register handlers for.
  */
 export const SIGNALS: Array<NodeJS.Signals> = [
   'SIGINT',
@@ -33,14 +33,15 @@ export const SIGNALS: Array<NodeJS.Signals> = [
 
 
 /**
- * Tracks which user callbacks are associated with a particular signal.
+ * Tracks which signals we have registered process listeners for, and which user
+ * callbacks should be invoked for each signal.
  */
 const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>();
 
 
 /**
- * Provided an Adeiu callback and an error it threw, logs the error to standard
- * error.
+ * Provided an `adeiu` callback and an error it threw, logs the error to
+ * stderr.
  *
  * @example
  *
@@ -50,10 +51,10 @@ const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>();
  *
  * ```
  * Error: [adeiu] Callback `myCallback` threw: TypeError: Oh noes!
- *   at myCallback (/Users/foo/bar.js:42:3)
+ *   at myCallback (foo.js:42:3)
  * ```
  */
-function writeErrorToSterr(cb: AdeiuCallback, err?: Error) {
+function writeErrorToStderr(cb: AdeiuCallback, err?: Error) {
   if (err && err.stack) {
     const errType = err.constructor ? err.constructor.name : 'Error';
     const cbName = cb.name ? `Callback  \`${cb.name}\`` : 'Anonymous callback';
@@ -65,11 +66,12 @@ function writeErrorToSterr(cb: AdeiuCallback, err?: Error) {
 
 
 /**
- * Common signal handler; concurrently calls each registered callback. If any
- * callbacks throw or reject, the process will exit with code 1. Otherwise, the
- * process will exit with code 0 via the signal we received.
+ * Common signal handler; concurrently calls each callback registered for the
+ * provided signal. If any callbacks throw or reject, the process will exit with
+ * code 1.
  */
 async function handler(signal: NodeJS.Signals) {
+  // Get an array of user callbacks we need to invoke for the provided signal.
   const callbacksForSignal = signalCallbacks.get(signal);
 
   // If this occurs, it means there is an error in our handler (un)installation
@@ -86,7 +88,7 @@ async function handler(signal: NodeJS.Signals) {
       await cb(signal);
       return true;
     } catch (err) {
-      writeErrorToSterr(cb, err);
+      writeErrorToStderr(cb, err);
       return false;
     }
   }));
@@ -121,9 +123,9 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
     const callbacksForSignal = signalCallbacks.get(signal);
 
     if (!callbacksForSignal || callbacksForSignal.length === 0) {
-      // Since this is also the first callback being registered for this signal,
-      // install our handler for it.
       signalCallbacks.set(signal, [cb]);
+      // Since this is the first callback being registered for this signal,
+      // install our handler for it.
       process.prependOnceListener(signal, handler);
     } else {
       signalCallbacks.set(signal, [...callbacksForSignal, cb]);
@@ -140,9 +142,9 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
       }
 
       if (callbacksForSignal.length === 1 && callbacksForSignal[0] === cb) {
-        // This means we are un-registering the last remaining callback for this
-        // signal, so we should uninstall our handler.
         signalCallbacks.set(signal, []);
+        // This means we are un-registering the last remaining callback for this
+        // signal, so uninstall our handler for it.
         process.off(signal, handler);
       } else {
         signalCallbacks.set(signal, callbacksForSignal.filter(curCallback => curCallback !== cb));

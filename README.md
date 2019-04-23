@@ -45,23 +45,24 @@ annuler();
 
 ## Advanced Usage
 
-Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument passed to your callback. However, if it is important that listeners are _only_ installed on a particular signal, you may optionally provide a custom array of signals to assign a callback to:
+Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument passed to your callback. However, if it is important that listeners are _only_ installed on a particular signal, you may optionally provide a custom array of signals to assign a callback to.
 
 ```ts
 import adeiu from '@darkobits/adeiu';
 
-// Handles SIGINT only.
-const sigintCallback = async () => {
+// Register callback that will only be invoked on SIGINT.
+adeiu(() => {
   // SIGINT cleanup tasks.
-};
+}, ['SIGINT']);
+```
 
-// Handles SIGTERM only.
-const sigintCallback = async () => {
-  // SIGTERM cleanup tasks.
-};
+```ts
+import adeiu, {SIGNALS} from '@darkobits/adeiu';
 
-adeiu(sigintCallback, ['SIGINT']);
-adeiu(sigtermCallback, ['SIGTERM']);
+// Register callback with the default signals and SIGUSR1.
+adeiu(() => {
+  // Custom cleanup tasks.
+}, [...SIGNALS, 'SIGUSR1']);
 ```
 
 ## &nbsp;

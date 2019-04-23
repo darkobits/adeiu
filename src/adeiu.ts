@@ -124,7 +124,7 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
       // Since this is also the first callback being registered for this signal,
       // install our handler for it.
       signalCallbacks.set(signal, [cb]);
-      process.once(signal, handler);
+      process.prependOnceListener(signal, handler);
     } else {
       signalCallbacks.set(signal, [...callbacksForSignal, cb]);
     }

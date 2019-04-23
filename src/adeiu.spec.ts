@@ -10,7 +10,7 @@ describe('adeiu', () => {
   const exitSpy = jest.spyOn(process, 'exit');
   const killSpy = jest.spyOn(process, 'kill');
   const offSpy = jest.spyOn(process, 'off');
-  const onceSpy = jest.spyOn(process, 'once');
+  const prependOnceSpy = jest.spyOn(process, 'prependOnceListener');
   const stdErrWriteSpy = jest.spyOn(process.stderr, 'write');
 
   // Because we're mocking `process`, we need to do so just before our tests. As
@@ -23,7 +23,7 @@ describe('adeiu', () => {
     killSpy.mockImplementation((pid, signal) => true);
     stdErrWriteSpy.mockImplementation(data => true);
 
-    onceSpy.mockImplementation((eventName: string, listener: Function) => {
+    prependOnceSpy.mockImplementation((eventName: string, listener: Function) => {
       emitter.once(eventName).then(() => listener(eventName)); // tslint:disable-line no-floating-promises
       return process;
     });
@@ -41,7 +41,7 @@ describe('adeiu', () => {
     });
 
     it('should bind to termination events', () => {
-      const signals = onceSpy.mock.calls.map((args: Array<any>) => args[0]);
+      const signals = prependOnceSpy.mock.calls.map((args: Array<any>) => args[0]);
 
       expect(signals.includes('SIGINT')).toBe(true);
       expect(signals.includes('SIGQUIT')).toBe(true);
@@ -72,19 +72,19 @@ describe('adeiu', () => {
     const otherCallback = jest.fn();
 
     it('should install the adeiu handler when the first user callback is registered', () => {
-      expect(onceSpy).not.toHaveBeenCalled();
+      expect(prependOnceSpy).not.toHaveBeenCalled();
 
       // Register the first callback for this signal.
       adeiu(callback, {signals: [signal]});
 
       // Assert that we installed the handler.
-      expect(onceSpy.mock.calls[0][0]).toBe(signal);
+      expect(prependOnceSpy.mock.calls[0][0]).toBe(signal);
 
       // Register another callback on the same signal.
       adeiu(otherCallback, {signals: [signal]});
 
       // Assert that we did not call process.once again.
-      expect(onceSpy).toHaveBeenCalledTimes(1);
+      expect(prependOnceSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should uninstall the adeiu handler when the last user callback is unregistered', () => {

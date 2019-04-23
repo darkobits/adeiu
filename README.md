@@ -14,10 +14,11 @@ Yet another POSIX signal handler.
 
 ## Features
 
-* Runs any combination of synchronous and asynchronous callbacks concurrently.
-* Ensures a clean exit if all callbacks resolve/return.
-* Exit with an error if any callbcks reject/throw.
-* Ensures processes exit cleanly, even when they have asynchronous callbacks and the Node debugger is in use. (See [this issue](https://github.com/nodejs/node/issues/7742).
+* Ensures provided functions are called before any other event listeners and are run concurrently, minimizing shutdown time.
+* Works with any combination of synchronous and asynchronous functions.
+* Ensures a clean exit if all functions resolve/return.
+* Exits with an error if any functions reject/throw.
+* Ensures processes exit cleanly, even when they have asynchronous shut-down functions and the Node debugger is in use. (See [this issue](https://github.com/nodejs/node/issues/7742))
 
 ## Install
 

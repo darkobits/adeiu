@@ -50,14 +50,14 @@ const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>();
  * };
  *
  * ```
- * Error: [adeiu] Callback `myCallback` threw: TypeError: Oh noes!
+ * Error: [adeiu] SIGINT handler `myCallback` threw: TypeError: Oh noes!
  *   at myCallback (foo.js:42:3)
  * ```
  */
-function writeErrorToStderr(cb: AdeiuCallback, err?: Error) {
+function writeErrorToStderr(cb: AdeiuCallback, signal: NodeJS.Signals, err?: Error) {
   if (err && err.stack) {
     const errType = err.constructor ? err.constructor.name : 'Error';
-    const cbName = cb.name ? `Callback  \`${cb.name}\`` : 'Anonymous callback';
+    const cbName = cb.name ? `${signal} handler  \`${cb.name}\`` : 'Anonymous callback';
     const stackLines = err.stack.split('\n');
     stackLines[0] = `${chalk.red(`Error: [adeiu] ${cbName} threw:`)} ${errType}: ${err.message}`;
     process.stderr.write(`${stackLines.join('\n')}\n`);
@@ -88,7 +88,7 @@ async function handler(signal: NodeJS.Signals) {
       await cb(signal);
       return true;
     } catch (err) {
-      writeErrorToStderr(cb, err);
+      writeErrorToStderr(cb, signal, err);
       return false;
     }
   }));

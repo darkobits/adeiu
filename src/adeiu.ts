@@ -113,7 +113,7 @@ async function handler(signal: NodeJS.Signals) {
  */
 export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = {}) {
   // Validate options.
-  ow(signals, 'signals', ow.array);
+  ow(signals, 'signals', ow.array.ofType(ow.string));
 
   // If the user provided a custom list of signals, use it. Otherwise, use the
   // default list.

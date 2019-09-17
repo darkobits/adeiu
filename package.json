@@ -53,7 +53,7 @@
     "@darkobits/ts-unified": "^3.0.6",
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.2",
-    "emittery": "^0.4.1",
+    "emittery": "^0.5.0",
     "p-wait-for": "^3.1.0"
   }
 }

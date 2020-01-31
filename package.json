@@ -52,7 +52,7 @@
   "devDependencies": {
     "@darkobits/ts-unified": "^3.2.3",
     "@types/jest": "^24.0.20",
-    "@types/node": "^12.11.7",
+    "@types/node": "^13.5.3",
     "emittery": "^0.5.1",
     "p-wait-for": "^3.1.0"
   }

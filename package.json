@@ -46,7 +46,7 @@
     "prepare": "nps prepare"
   },
   "dependencies": {
-    "chalk": "^2.4.2",
+    "chalk": "^4.0.0",
     "ow": "^0.13.2"
   },
   "devDependencies": {

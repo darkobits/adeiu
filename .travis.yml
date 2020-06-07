@@ -1,0 +1,8 @@
+os: linux
+language: node_js
+node_js:
+  - 12
+npm_args: --ignore-scripts
+script:
+  - npx nps build
+  - npx nps test

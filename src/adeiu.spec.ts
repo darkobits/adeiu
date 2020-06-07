@@ -1,11 +1,12 @@
 import Emittery from 'emittery';
 import pWaitFor from 'p-wait-for';
+import type adeiuType from './adeiu';
 
 
 describe('adeiu', () => {
   const emitter = new Emittery();
 
-  let adeiu: Function;
+  let adeiu: typeof adeiuType;
 
   const exitSpy = jest.spyOn(process, 'exit');
   const killSpy = jest.spyOn(process, 'kill');
@@ -19,20 +20,21 @@ describe('adeiu', () => {
   beforeEach(() => {
     emitter.clearListeners();
 
-    exitSpy.mockImplementation(code => undefined as never);
-    killSpy.mockImplementation((pid, signal) => true);
-    stdErrWriteSpy.mockImplementation(data => true);
+    exitSpy.mockImplementation(() => undefined as never);
+    killSpy.mockImplementation(() => true);
+    stdErrWriteSpy.mockImplementation(() => true);
 
-    prependOnceSpy.mockImplementation((eventName: string, listener: Function) => {
-      emitter.once(eventName).then(() => listener(eventName)); // tslint:disable-line no-floating-promises
+    prependOnceSpy.mockImplementation((eventName: string, listener: any) => {
+      void emitter.once(eventName).then(() => listener(eventName)); // tslint:disable-line no-floating-promises
       return process;
     });
 
-    adeiu = require('./adeiu').default; // tslint:disable-line no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    adeiu = require('./adeiu').default;
   });
 
   describe('common case', () => {
-    let unregister: Function;
+    let unregister: any;
 
     beforeEach(() => {
       unregister = adeiu(() => {
@@ -41,12 +43,12 @@ describe('adeiu', () => {
     });
 
     it('should bind to termination events', () => {
-      const signals = prependOnceSpy.mock.calls.map((args: Array<any>) => args[0]);
+      const signals = new Set(prependOnceSpy.mock.calls.map((args: Array<any>) => args[0]));
 
-      expect(signals.includes('SIGINT')).toBe(true);
-      expect(signals.includes('SIGQUIT')).toBe(true);
-      expect(signals.includes('SIGTERM')).toBe(true);
-      expect(signals.includes('SIGUSR2')).toBe(true);
+      expect(signals.has('SIGINT')).toBe(true);
+      expect(signals.has('SIGQUIT')).toBe(true);
+      expect(signals.has('SIGTERM')).toBe(true);
+      expect(signals.has('SIGUSR2')).toBe(true);
     });
 
     it('should call process.kill with the signal it received', async () => {
@@ -67,9 +69,10 @@ describe('adeiu', () => {
   });
 
   describe('registering with custom signals', () => {
-    const signal = 'SIGFOO';
+    const signal = 'SIGFOO' as NodeJS.Signals;
     const callback = jest.fn();
     const otherCallback = jest.fn();
+
 
     it('should install the adeiu handler when the first user callback is registered', () => {
       expect(prependOnceSpy).not.toHaveBeenCalled();
@@ -109,7 +112,7 @@ describe('adeiu', () => {
   });
 
   describe('when a callback rejects/throws', () => {
-    let unregister: Function;
+    let unregister: any;
 
     const err = new Error('Handler threw.');
 

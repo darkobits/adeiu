@@ -55,7 +55,7 @@ const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>();
  * ```
  */
 function writeErrorToStderr(cb: AdeiuCallback, signal: NodeJS.Signals, err?: Error) {
-  if (err && err.stack) {
+  if (err?.stack) {
     const errType = err.constructor ? err.constructor.name : 'Error';
     const cbName = cb.name ? `${signal} handler  \`${cb.name}\`` : 'Anonymous callback';
     const stackLines = err.stack.split('\n');
@@ -95,6 +95,7 @@ async function handler(signal: NodeJS.Signals) {
 
   if (results.includes(false)) {
     // If any functions threw/rejected, exit with code 1.
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   } else {
     // N.B. We use process.kill() here rather than process.exit() because it
@@ -126,7 +127,7 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
       signalCallbacks.set(signal, [cb]);
       // Since this is the first callback being registered for this signal,
       // install our handler for it.
-      process.prependOnceListener(signal, handler);
+      process.prependOnceListener(signal, handler as NodeJS.SignalsListener);
     } else {
       signalCallbacks.set(signal, [...callbacksForSignal, cb]);
     }
@@ -145,7 +146,7 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
         signalCallbacks.set(signal, []);
         // This means we are un-registering the last remaining callback for this
         // signal, so uninstall our handler for it.
-        process.off(signal, handler);
+        process.off(signal, handler as NodeJS.SignalsListener);
       } else {
         signalCallbacks.set(signal, callbacksForSignal.filter(curCallback => curCallback !== cb));
       }

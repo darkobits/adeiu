@@ -1,1 +1,3 @@
-module.exports = require('@darkobits/ts-unified/dist/config/babel')();
+module.exports = {
+  extends: require.resolve('@darkobits/ts-unified/dist/config/babel')
+}

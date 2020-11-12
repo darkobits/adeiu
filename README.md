@@ -1,5 +1,5 @@
 <a href="#top" id="top">
-  <img src="https://user-images.githubusercontent.com/441546/56342070-cf5ec400-616b-11e9-8079-04fc9bc744c5.png" style="max-width: 100%;">
+  <img src="https://user-images.githubusercontent.com/441546/98942526-fd6ccd00-24a2-11eb-9f7c-8682add56bd0.png" style="max-width: 100%;">
 </a>
 <p align="center">
   <a href="https://www.npmjs.com/package/@darkobits/adeiu"><img src="https://img.shields.io/npm/v/@darkobits/adeiu.svg?style=flat-square"></a>

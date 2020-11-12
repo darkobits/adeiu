@@ -5,9 +5,8 @@ install:
   - npm ci --ignore-scripts
 script:
   - npx nps build
-  # - npx nps test
-# after_success:
-#   - npx codacy-coverage -v < ./coverage/lcov.info
+  - npx nps test.coverage
+after_success:
+  - npx codacy-coverage -v < ./coverage/lcov.info
 cache:
-  directories:
-    - node_modules
+  npm: true

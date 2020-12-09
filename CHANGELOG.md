@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.9](https://github.com/darkobits/adeiu/compare/v0.2.8...v0.2.9) (2020-12-09)
+
+
+### 🏗 Chores
+
+* Update configuration. ([9acf728](https://github.com/darkobits/adeiu/commit/9acf728f1ae88ec5e57e03a61fe5de7ef5294f35))
+* Update dependencies. ([a56d986](https://github.com/darkobits/adeiu/commit/a56d986f6e4129d78f16db5197657c14d06a3e4e))
+
+
+### 📖 Documentation
+
+* Update README. ([af9db45](https://github.com/darkobits/adeiu/commit/af9db455c70620dd6860d3bd587205ecfadae771))
+
 ### [0.2.8](https://github.com/darkobits/adeiu/compare/v0.2.7...v0.2.8) (2020-11-12)
 
 ### [0.2.7](https://github.com/darkobits/adeiu/compare/v0.2.6...v0.2.7) (2020-06-07)

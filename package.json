@@ -49,6 +49,6 @@
   "devDependencies": {
     "@darkobits/ts": "^0.2.2",
     "emittery": "^0.7.2",
-    "p-wait-for": "^3.1.0"
+    "p-wait-for": "^3.2.0"
   }
 }

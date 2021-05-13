@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
-    "ow": "^0.21.0"
+    "ow": "^0.23.0"
   },
   "devDependencies": {
-    "@darkobits/ts": "^0.2.2",
-    "emittery": "^0.7.2",
+    "@darkobits/ts": "^0.3.3",
+    "emittery": "^0.8.1",
     "p-wait-for": "^3.1.0"
   }
 }

@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
-    "ow": "^0.23.0"
+    "ow": "^0.23.1"
   },
   "devDependencies": {
     "@darkobits/ts": "^0.3.3",

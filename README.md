@@ -6,6 +6,7 @@
   <a href="https://github.com/darkobits/adeiu/actions"><img src="https://img.shields.io/github/workflow/status/darkobits/adeiu/CI?style=flat-square"></a>
   <a href="https://app.codecov.io/gh/darkobits/adeiu/branch/master"><img src="https://img.shields.io/codecov/c/github/darkobits/adeiu/master?style=flat-square"></a>
   <a href="https://depfu.com/github/darkobits/adeiu"><img src="https://img.shields.io/depfu/darkobits/adeiu?style=flat-square"></a>
+  <a href="https://bundlephobia.com/package/@darkobits/adeiu"><img src="https://img.shields.io/bundlephobia/minzip/@darkobits/adeiu?label=size&style=flat-square"></a>
   <a href="https://conventionalcommits.org"><img src="https://img.shields.io/static/v1?label=commits&message=conventional&style=flat-square&color=398AFB"></a>
 </p>
 

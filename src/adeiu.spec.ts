@@ -161,6 +161,6 @@ describe('adeiu', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
-    jest.resetModuleRegistry();
+    jest.resetModules();
   });
 });

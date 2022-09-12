@@ -30,9 +30,8 @@ npm i @darkobits/adeiu
 
 ## Use
 
-Adeiu accepts an asynchronous or synchronous handler function and returns a function that can be invoked
-to unregister the handler. By default, the handler will be registered to respond to the following
-signals:
+Adeiu accepts an asynchronous or synchronous handler function. By default, the handler will be
+registered to respond to the following signals:
 
 * `SIGINT`
 * `SIGQUIT`
@@ -42,8 +41,7 @@ signals:
 ```ts
 import adeiu from '@darkobits/adeiu';
 
-// Register a callback.
-const annuler = adeiu(async signal => {
+adeiu(async signal => {
   console.log(`Hey, we got ${signal}. Exiting...`);
 
   await someAsyncStuff();
@@ -55,16 +53,32 @@ const annuler = adeiu(async signal => {
 annuler();
 ```
 
-## Customizing Signals
+### Unregistering Handlers
 
-Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument
-passed to your callback. However, if it is important that listeners are _only_ installed on a particular
-signal, you may optionally provide a custom array of signals to assign a callback to.
+Adeiu returns a function that can be invoked to unregister a handler.
 
 ```ts
 import adeiu from '@darkobits/adeiu';
 
-// Register callback that will _only_ be invoked on SIGINT.
+const unregister = adeiu(() => {
+  // Handler implementation here.
+});
+
+// Un-register the handler.
+unregister();
+```
+
+### Customizing Signals
+
+Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument
+passed to your handler. However, if it is important that handlers are _only_ installed on a particular
+signal, or if you'd like to respond to signals other than the defaults, you may optionally provide a
+custom array of signals as a second argument:
+
+```ts
+import adeiu from '@darkobits/adeiu';
+
+// Register callback that will _only_ be invoked on SIGINT:
 adeiu(() => {
   // SIGINT cleanup tasks.
 }, ['SIGINT']);
@@ -73,7 +87,7 @@ adeiu(() => {
 ```ts
 import adeiu, { SIGNALS } from '@darkobits/adeiu';
 
-// Register callback with the default signals and SIGUSR1.
+// Register callback with the default signals _and_ SIGUSR1:
 adeiu(() => {
   // Custom cleanup tasks.
 }, [...SIGNALS, 'SIGUSR1']);

@@ -14,11 +14,13 @@ Yet another POSIX signal handler.
 
 ## Features
 
-* Ensures provided functions are called before any other event listeners and are run concurrently, minimizing shutdown time.
+* Ensures provided functions are called before any other event listeners and are run concurrently,
+  minimizing shutdown time.
 * Works with any combination of synchronous and asynchronous functions.
 * Ensures a clean exit if all functions resolve/return.
 * Exits with an error if any functions reject/throw.
-* Ensures processes exit cleanly, even when they have asynchronous shut-down functions and the Node debugger is in use. (See [this issue](https://github.com/nodejs/node/issues/7742))
+* Ensures processes exit cleanly, even when they have asynchronous shut-down functions and the Node
+  debugger is in use. (See [this issue](https://github.com/nodejs/node/issues/7742))
 
 ## Install
 
@@ -27,6 +29,15 @@ npm i @darkobits/adeiu
 ```
 
 ## Use
+
+Adeiu accepts an asynchronous or synchronous handler function and returns a function that can be invoked
+to unregister the handler. By default, the handler will be registered to respond to the following
+signals:
+
+* `SIGINT`
+* `SIGQUIT`
+* `SIGTERM`
+* `SIGUSR2`
 
 ```ts
 import adeiu from '@darkobits/adeiu';
@@ -44,21 +55,23 @@ const annuler = adeiu(async signal => {
 annuler();
 ```
 
-## Advanced Usage
+## Customizing Signals
 
-Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument passed to your callback. However, if it is important that listeners are _only_ installed on a particular signal, you may optionally provide a custom array of signals to assign a callback to.
+Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument
+passed to your callback. However, if it is important that listeners are _only_ installed on a particular
+signal, you may optionally provide a custom array of signals to assign a callback to.
 
 ```ts
 import adeiu from '@darkobits/adeiu';
 
-// Register callback that will only be invoked on SIGINT.
+// Register callback that will _only_ be invoked on SIGINT.
 adeiu(() => {
   // SIGINT cleanup tasks.
 }, ['SIGINT']);
 ```
 
 ```ts
-import adeiu, {SIGNALS} from '@darkobits/adeiu';
+import adeiu, { SIGNALS } from '@darkobits/adeiu';
 
 // Register callback with the default signals and SIGUSR1.
 adeiu(() => {

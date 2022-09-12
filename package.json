@@ -8,6 +8,26 @@
     "type": "git",
     "url": "git+https://github.com/darkobits/adeiu.git"
   },
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/adeiu.js",
+  "scripts": {
+    "prepare": "nr prepare"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "ow": "^0.27.0"
+  },
+  "devDependencies": {
+    "@darkobits/eslint-plugin": "^0.2.9",
+    "@darkobits/ts": "^0.12.4",
+    "emittery": "^0.9.2",
+    "p-wait-for": "^3.2.0"
+  },
   "keywords": [
     "clean",
     "event",
@@ -31,24 +51,5 @@
     "sigterm",
     "stop",
     "terminate"
-  ],
-  "engines": {
-    "node": ">= 14.0.0"
-  },
-  "files": [
-    "dist"
-  ],
-  "main": "dist/adeiu.js",
-  "scripts": {
-    "prepare": "nr prepare"
-  },
-  "dependencies": {
-    "chalk": "^4.1.2",
-    "ow": "^0.27.0"
-  },
-  "devDependencies": {
-    "@darkobits/ts": "^0.7.11",
-    "emittery": "^0.9.2",
-    "p-wait-for": "^3.2.0"
-  }
+  ]
 }

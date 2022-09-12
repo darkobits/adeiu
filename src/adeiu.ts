@@ -28,6 +28,7 @@ export const SIGNALS: Array<NodeJS.Signals> = [
   'SIGINT',
   'SIGQUIT',
   'SIGTERM',
+  // Signal sent by nodemon to child processes when it needs to restart them.
   'SIGUSR2'
 ];
 
@@ -87,7 +88,7 @@ async function handler(signal: NodeJS.Signals) {
     try {
       await cb(signal);
       return true;
-    } catch (err) {
+    } catch (err: any) {
       writeErrorToStderr(cb, signal, err);
       return false;
     }
@@ -138,7 +139,7 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
       const callbacksForSignal = signalCallbacks.get(signal);
 
       if (!callbacksForSignal || callbacksForSignal.length === 0) {
-        // User may have alreay called this function previously.
+        // User may have already called this function previously.
         return;
       }
 

@@ -85,12 +85,12 @@ adeiu(() => {
 ```
 
 ```ts
-import adeiu, { SIGNALS } from '@darkobits/adeiu';
+import adeiu from '@darkobits/adeiu';
 
 // Register callback with the default signals _and_ SIGUSR1:
 adeiu(() => {
   // Custom cleanup tasks.
-}, [...SIGNALS, 'SIGUSR1']);
+}, [...adeiu.SIGNALS, 'SIGUSR1']);
 ```
 
 <br />

@@ -24,7 +24,7 @@ export interface AdeiuOptions {
 /**
  * List of default POSIX signals to register handlers for.
  */
-export const SIGNALS: Array<NodeJS.Signals> = [
+const SIGNALS: Array<NodeJS.Signals> = [
   'SIGINT',
   'SIGQUIT',
   'SIGTERM',
@@ -154,3 +154,9 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
     });
   };
 }
+
+
+/**
+ * Attach signals to adeiu.
+ */
+adeiu.SIGNALS = SIGNALS;

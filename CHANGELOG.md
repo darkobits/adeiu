@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/darkobits/adeiu/compare/v0.2.16...v0.3.0) (2023-02-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* Before:
+
+```ts
+import adeiu, { SIGNALS } from '@darkobits/adeiu';
+```
+
+After:
+
+```ts
+import adeiu from '@darkobits/adeiu';
+
+adeiu.SIGNALS;
+```
+
+### 🛠 Refactoring
+
+* Attach `SIGNALS` to adeiu export. ([7fbb753](https://github.com/darkobits/adeiu/commit/7fbb75380f3e8ac62c1c72a9ebf100ec4c062c0f))
+
 ## [0.2.16](https://github.com/darkobits/adeiu/compare/v0.2.15...v0.2.16) (2023-02-22)
 
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.1](https://github.com/darkobits/adeiu/compare/v0.3.0...v0.3.1) (2023-02-22)
+
+
+### 🐞 Bug Fixes
+
+* Fix `ow` default import issue. ([4dd8743](https://github.com/darkobits/adeiu/commit/4dd87438a571cab32da9db0e8e68f5e92a8691c1))
+
 ## [0.3.0](https://github.com/darkobits/adeiu/compare/v0.2.16...v0.3.0) (2023-02-22)
 
 

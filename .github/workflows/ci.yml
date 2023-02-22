@@ -33,7 +33,7 @@ jobs:
         run: npm clean-install
       - name: Build
         run: npx nr build
-      - name: Test
-        run: |
-          npx nr test.coverage
-          bash <(curl -s https://codecov.io/bash)
+      - name: Run Tests
+        run: npx nr test.coverage
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v3

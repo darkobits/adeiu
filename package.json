@@ -19,6 +19,7 @@
     "prepare": "nr prepare"
   },
   "dependencies": {
+    "@darkobits/interop-import-default": "^0.1.1",
     "chalk": "^4.1.2",
     "ow": "^0.27.0"
   },

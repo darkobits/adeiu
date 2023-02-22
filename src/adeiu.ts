@@ -1,5 +1,9 @@
+import { interopImportDefault } from '@darkobits/interop-import-default';
 import chalk from 'chalk';
-import ow from 'ow';
+import owExport from 'ow';
+
+
+const ow: typeof owExport = interopImportDefault(owExport);
 
 
 /**

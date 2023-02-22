@@ -1,5 +1,6 @@
 import Emittery from 'emittery';
 import pWaitFor from 'p-wait-for';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import type adeiuType from './adeiu';
 
@@ -9,20 +10,20 @@ describe('adeiu', () => {
 
   let adeiu: typeof adeiuType;
 
-  const exitSpy = jest.spyOn(process, 'exit');
-  const killSpy = jest.spyOn(process, 'kill');
-  const offSpy = jest.spyOn(process, 'off');
-  const prependOnceSpy = jest.spyOn(process, 'prependOnceListener');
-  const stdErrWriteSpy = jest.spyOn(process.stderr, 'write');
+  const exitSpy = vi.spyOn(process, 'exit');
+  const killSpy = vi.spyOn(process, 'kill');
+  const offSpy = vi.spyOn(process, 'off');
+  const prependOnceSpy = vi.spyOn(process, 'prependOnceListener');
+  const stdErrWriteSpy = vi.spyOn(process.stderr, 'write');
 
   // Because we're mocking `process`, we need to do so just before our tests. As
   // such, we also need to import the module being tested _after_ these mocks
   // have been set up to ensure the module gets the mocked version.
-  beforeEach(() => {
+  beforeEach(async () => {
     emitter.clearListeners();
 
     exitSpy.mockImplementation(() => undefined as never);
-    killSpy.mockImplementation(() => true);
+    killSpy.mockImplementation(() => true as const);
     stdErrWriteSpy.mockImplementation(() => true);
 
     prependOnceSpy.mockImplementation((eventName: string, listener: any) => {
@@ -30,8 +31,7 @@ describe('adeiu', () => {
       return process;
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    adeiu = require('./adeiu').default;
+    adeiu = (await import('./adeiu')).default;
   });
 
   describe('common case', () => {
@@ -71,8 +71,8 @@ describe('adeiu', () => {
 
   describe('registering with custom signals', () => {
     const signal = 'SIGFOO' as NodeJS.Signals;
-    const callback = jest.fn();
-    const otherCallback = jest.fn();
+    const callback = vi.fn();
+    const otherCallback = vi.fn();
 
 
     it('should install the adeiu handler when the first user callback is registered', () => {
@@ -161,7 +161,9 @@ describe('adeiu', () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
-    jest.resetModules();
+    vi.resetAllMocks();
+    vi.resetModules();
+    // jest.resetAllMocks();
+    // jest.resetModules();
   });
 });

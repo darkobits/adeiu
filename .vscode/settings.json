@@ -1,0 +1,9 @@
+{
+  "cSpell.words": [
+    "SIGINT",
+    "SIGUSR"
+  ],
+  // Use ESLint flat config.
+  "eslint.experimental.useFlatConfig": true,
+  "eslint.options.overrideConfigFile": "eslint.config.mjs"
+}

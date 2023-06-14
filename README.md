@@ -71,15 +71,12 @@ registered to respond to the following signals:
 import adeiu from '@darkobits/adeiu';
 
 adeiu(async signal => {
-  console.log(`Hey, we got ${signal}. Exiting...`);
+  console.log(`Received signal ${signal}; performing shut-down tasks...`);
 
   await someAsyncStuff();
 
   console.log('All done!');
 });
-
-// Un-register the callback.
-annuler();
 ```
 
 ### Unregistering Handlers
@@ -100,9 +97,9 @@ unregister();
 ### Customizing Signals
 
 Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument
-passed to your handler. However, if it is important that handlers are _only_ installed on a particular
-signal, or if you'd like to respond to signals other than the defaults, you may optionally provide a
-custom array of signals as a second argument:
+passed to your handler. However, if it is important that handlers are _only_ invoked for a particular
+signal, or if you'd like to respond to signals other than the defaults, you may optionally provide an
+array of signals as a second argument:
 
 ```ts
 import adeiu from '@darkobits/adeiu';

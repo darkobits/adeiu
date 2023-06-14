@@ -1,13 +1,42 @@
-<a href="#top" id="top">
-  <img src="https://user-images.githubusercontent.com/441546/101619135-b1407a00-39c7-11eb-8295-ea7d52a667bb.png" style="max-width: 100%;">
-</a>
 <p align="center">
-  <a href="https://www.npmjs.com/package/@darkobits/adeiu"><img src="https://img.shields.io/npm/v/@darkobits/adeiu.svg?style=flat-square"></a>
-  <a href="https://github.com/darkobits/adeiu/actions"><img src="https://img.shields.io/github/workflow/status/darkobits/adeiu/CI?style=flat-square"></a>
-  <a href="https://app.codecov.io/gh/darkobits/adeiu/branch/master"><img src="https://img.shields.io/codecov/c/github/darkobits/adeiu/master?style=flat-square"></a>
-  <a href="https://depfu.com/github/darkobits/adeiu"><img src="https://img.shields.io/depfu/darkobits/adeiu?style=flat-square"></a>
-  <a href="https://bundlephobia.com/package/@darkobits/adeiu"><img src="https://img.shields.io/bundlephobia/minzip/@darkobits/adeiu?label=size&style=flat-square"></a>
-  <a href="https://conventionalcommits.org"><img src="https://img.shields.io/static/v1?label=commits&message=conventional&style=flat-square&color=398AFB"></a>
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="https://github.com/darkobits/adeiu/assets/441546/5639dd58-3a6f-4015-98a9-14da5e22a97e"
+      width="100%"
+    >
+    <img
+      src="https://github.com/darkobits/adeiu/assets/441546/80c6679d-1419-4e15-a7f7-480e51c97511"
+      width="100%"
+    >
+  </picture>
+</p>
+<p align="center">
+  <a
+    href="https://www.npmjs.com/package/@darkobits/adeiu"
+  ><img
+    src="https://img.shields.io/npm/v/@darkobits/adeiu.svg?style=flat-square"
+  ></a>
+  <a
+    href="https://github.com/darkobits/adeiu/actions?query=workflow%3Aci"
+  ><img
+    src="https://img.shields.io/github/actions/workflow/status/darkobits/adeiu/ci.yml?style=flat-square"
+  ></a>
+  <a
+    href="https://depfu.com/repos/github/darkobits/adeiu"
+  ><img
+    src="https://img.shields.io/depfu/darkobits/adeiu?style=flat-square"
+  ></a>
+  <a
+    href="https://conventionalcommits.org"
+  ><img
+    src="https://img.shields.io/static/v1?label=commits&message=conventional&style=flat-square&color=398AFB"
+  ></a>
+  <a
+    href="https://firstdonoharm.dev"
+  ><img
+    src="https://img.shields.io/static/v1?label=license&message=hippocratic&style=flat-square&color=753065"
+  ></a>
 </p>
 
 Yet another POSIX signal handler.

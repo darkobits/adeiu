@@ -2,11 +2,11 @@
   "name": "@darkobits/adeiu",
   "version": "0.3.1",
   "description": "Yet another POSIX signal handler.",
-  "license": "WTFPL",
+  "license": "Hippocratic",
   "author": "darkobits",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/darkobits/adeiu.git"
+    "url": "https://github.com/darkobits/adeiu.git"
   },
   "engines": {
     "node": ">= 14.0.0"

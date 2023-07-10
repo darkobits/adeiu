@@ -4,6 +4,7 @@
   "description": "Yet another POSIX signal handler.",
   "license": "Hippocratic",
   "author": "darkobits",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/darkobits/adeiu.git"

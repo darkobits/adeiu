@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/darkobits/adeiu/compare/v0.3.1...v0.4.0) (2023-07-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* This module is now published as ESM.
+
+### 🏗 Chores
+
+* **deps:** Update dependencies. ([7b7d2ca](https://github.com/darkobits/adeiu/commit/7b7d2ca391bdee5756c97c39af1a7c3520c60065))
+* **deps:** Update dependencies. ([1a0e488](https://github.com/darkobits/adeiu/commit/1a0e4882dcdb8e2d0761668d8af2a8d9fcfb148b))
+* Update `.ci.yml`. ([27ee5b9](https://github.com/darkobits/adeiu/commit/27ee5b914822f3f5ebb03a27cd9e79fbd3379f3c))
+* Update `ci.yml`. ([fa7761a](https://github.com/darkobits/adeiu/commit/fa7761ade0be666f15686ed8dddbdc658e739451))
+* Update dependencies. ([86d0a8a](https://github.com/darkobits/adeiu/commit/86d0a8a8b03462b1686cfd18ae5b7e317ed64280))
+* Update LICENSE. ([c34f916](https://github.com/darkobits/adeiu/commit/c34f916ccdc220f4b0e65c9ede53bd5805166c1a))
+* Update README. ([4434ee5](https://github.com/darkobits/adeiu/commit/4434ee56866991aa6621410c5f6ecfc1b18ce5b2))
+
+
+### 🛠 Refactoring
+
+* Publish as ESM. ([29570fb](https://github.com/darkobits/adeiu/commit/29570fbe7c4ccecc202f6de55421bd9cfe6dc0c7))
+
 ## [0.3.1](https://github.com/darkobits/adeiu/compare/v0.3.0...v0.3.1) (2023-02-22)
 
 

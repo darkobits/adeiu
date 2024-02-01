@@ -1,6 +1,6 @@
 {
   "name": "@darkobits/adeiu",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Yet another POSIX signal handler.",
   "license": "Hippocratic",
   "author": "darkobits",

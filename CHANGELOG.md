@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.2](https://github.com/darkobits/adeiu/compare/v0.4.1...v0.4.2) (2025-02-22)
+
+
+### Bug Fixes
+
+* Use `prependListener` instead of `prependOnceListener`. ([935129d](https://github.com/darkobits/adeiu/commit/935129ddbedddb4f8e9d74399a2ff6b566d3b207))
+
 ## [0.4.1](https://github.com/darkobits/adeiu/compare/v0.4.0...v0.4.1) (2024-02-01)
 
 

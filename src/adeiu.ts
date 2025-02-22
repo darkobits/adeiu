@@ -6,7 +6,7 @@ export type AdeiuCallback = (signal: NodeJS.Signals) => void | Promise<void>;
 /**
  * List of default POSIX signals to register handlers for.
  */
-const SIGNALS: Array<NodeJS.Signals> = [
+export const DEFAULT_SIGNALS: Array<NodeJS.Signals> = [
   'SIGINT',
   'SIGQUIT',
   'SIGTERM',
@@ -77,6 +77,7 @@ function writeErrorToStderr(cb: AdeiuCallback, signal: NodeJS.Signals, err?: Err
 async function handler(signal: NodeJS.Signals) {
   // Ensure we only run once for a given signal.
   if (activeHandlers[signal]) return
+
   activeHandlers[signal] = true
 
   // Get an array of user callbacks we need to invoke for the provided signal.
@@ -128,20 +129,21 @@ export interface AdeiuOptions {
  *
  * Returns a function that, when invoked, will unregister the callback.
  */
-export default function adeiu(cb: AdeiuCallback, options?: AdeiuOptions) {
-  const { signals = [] } = options ?? {}
+export default function adeiu(cb: AdeiuCallback, options: AdeiuOptions = {}) {
+  const { signals = DEFAULT_SIGNALS, timeout } = options
 
   // Validate options.
   signals.forEach(signal => {
-    if (typeof signal !== 'string') throw new TypeError(`Expected signal to be of type "string", got "${typeof signal}".`)
-    if (!signal.startsWith('SIG')) throw new Error(`Invalid signal: ${signal}`)
+    if (typeof signal !== 'string')
+      throw new TypeError(`Expected signal to be of type "string", got "${typeof signal}".`)
+    if (!signal.startsWith('SIG'))
+      throw new Error(`Invalid signal: ${signal}`)
   })
 
-  // If the user provided a custom list of signals, use it. Otherwise, use the
-  // default list.
-  const resolvedSignals = signals.length > 0 ? signals : SIGNALS
+  if (typeof timeout !== 'number' && timeout !== undefined)
+    throw new TypeError(`Expected type of "timeout" to be "number" or "undefined", got "${typeof timeout}".`)
 
-  resolvedSignals.forEach(signal => {
+  signals.forEach(signal => {
     const callbackSetForSignal = getCallbackSetForSignal(signal)
 
     // Since this is the first callback being registered for this signal,
@@ -155,7 +157,7 @@ export default function adeiu(cb: AdeiuCallback, options?: AdeiuOptions) {
 
   // Un-register the provided callback from the indicated signals.
   return () => {
-    for (const signal of resolvedSignals) {
+    for (const signal of signals) {
       const callbackSetForSignal = getCallbackSetForSignal(signal)
 
       callbackSetForSignal.delete(cb)
@@ -169,8 +171,3 @@ export default function adeiu(cb: AdeiuCallback, options?: AdeiuOptions) {
     }
   }
 }
-
-/**
- * Attach signals to adeiu.
- */
-adeiu.SIGNALS = SIGNALS

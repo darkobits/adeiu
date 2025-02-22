@@ -79,7 +79,8 @@ adeiu(async signal => {
 
 You may call `adeiu` multiple times and from multiple places in your application. Handlers will be
 aggregated and invoked in parallel. This allows for small, focused shutdown handlers that can be
-co-located with the part of the application they are responsible for.
+co-located with the part of the application they are responsible for or where their data requirements
+are.
 
 ### Unregistering Handlers
 
@@ -113,10 +114,10 @@ adeiu(() => {
 ```
 
 ```ts
-import adeiu from '@darkobits/adeiu'
+import adeiu, { DEFAULT_SIGNALS } from '@darkobits/adeiu'
 
 // Register callback with the default signals _and_ SIGUSR1:
 adeiu(() => {
   // Custom cleanup tasks.
-}, { signals: [...adeiu.SIGNALS, 'SIGUSR1'] })
+}, { signals: [...DEFAULT_SIGNALS, 'SIGUSR1'] })
 ```

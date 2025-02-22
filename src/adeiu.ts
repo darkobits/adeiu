@@ -4,18 +4,6 @@
 export type AdeiuCallback = (signal: NodeJS.Signals) => void | Promise<void>;
 
 /**
- * Optional options object that may be passed to `adeiu`.
- */
-export interface AdeiuOptions {
-  /**
-   * (Optional) Array of signals that the provided callback should be invoked
-   * for. These signals are _not_ merged with the defaults, so each desired
-   * signal must be explicitly enumerated.
-   */
-  signals?: Array<NodeJS.Signals>
-}
-
-/**
  * List of default POSIX signals to register handlers for.
  */
 const SIGNALS: Array<NodeJS.Signals> = [
@@ -31,6 +19,11 @@ const SIGNALS: Array<NodeJS.Signals> = [
  * callbacks should be invoked for each signal.
  */
 const signalCallbacks = new Map<NodeJS.Signals, Set<AdeiuCallback>>()
+
+/**
+ * Tracks signals for which we currently have outstanding callbacks.
+ */
+const activeHandlers: Partial<Record<NodeJS.Signals, boolean>> = {}
 
 /**
  * Returns the `Set` of user-provided callbacks for the provided signal.
@@ -82,6 +75,10 @@ function writeErrorToStderr(cb: AdeiuCallback, signal: NodeJS.Signals, err?: Err
  * code 1.
  */
 async function handler(signal: NodeJS.Signals) {
+  // Ensure we only run once for a given signal.
+  if (activeHandlers[signal]) return
+  activeHandlers[signal] = true
+
   // Get an array of user callbacks we need to invoke for the provided signal.
   const callbackSetForSignal = getCallbackSetForSignal(signal)
 
@@ -114,12 +111,26 @@ async function handler(signal: NodeJS.Signals) {
 }
 
 /**
+ * Optional options object that may be passed to `adeiu`.
+ */
+export interface AdeiuOptions {
+  /**
+   * (Optional) Array of signals that the provided callback should be invoked
+   * for. These signals are _not_ merged with the defaults, so each desired
+   * signal must be explicitly enumerated.
+   */
+  signals?: Array<NodeJS.Signals>
+}
+
+/**
  * Provided a function, registers a callback with several common POSIX signals
  * that will invoke the function upon receipt of any of the signals.
  *
  * Returns a function that, when invoked, will unregister the callback.
  */
-export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = {}) {
+export default function adeiu(cb: AdeiuCallback, options?: AdeiuOptions) {
+  const { signals = [] } = options ?? {}
+
   // Validate options.
   signals.forEach(signal => {
     if (typeof signal !== 'string') throw new TypeError(`Expected signal to be of type "string", got "${typeof signal}".`)

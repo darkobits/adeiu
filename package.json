@@ -20,7 +20,7 @@
     "prepare": "nr prepare"
   },
   "devDependencies": {
-    "@darkobits/ts": "0.24.0",
+    "@darkobits/ts": "0.24.1",
     "emittery": "^1.1.0",
     "p-wait-for": "^5.0.2"
   },

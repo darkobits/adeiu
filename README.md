@@ -39,15 +39,16 @@
   ></a>
 </p>
 
-Yet another POSIX signal handler.
+Adeiu is a POSIX signal handler designed to for applications with asynchronous cleanup / shutdown
+requirements, such as gracefully shutting-down an HTTP server or closing a database connection.
 
 ## Features
 
+* Zero dependencies.
 * Ensures provided handlers are called before any other event listeners and are run concurrently,
   minimizing shutdown time.
-* Works with any combination of synchronous and asynchronous functions.
-* Exits with code `0` if all handlers resolve/return.
-* Exits with an `AggregateError` if any handler rejects/throws.
+* Works with any combination of synchronous and asynchronous handlers.
+* Automatically exits with code `0` once all handlers resolve/return, or `1` if any reject/throw.
 * Supports edge cases related to the Node debugger being attached to a process. (See [this issue](https://github.com/nodejs/node/issues/7742))
 
 ## Install
@@ -67,58 +68,55 @@ registered to respond to the following signals:
 * `SIGUSR2`
 
 ```ts
-import adeiu from '@darkobits/adeiu';
+import adeiu from '@darkobits/adeiu'
 
 adeiu(async signal => {
-  console.log(`Received signal ${signal}; performing shut-down tasks...`);
-
-  await someAsyncStuff();
-
-  console.log('All done!');
-});
+  console.log(`Received signal ${signal}; performing shut-down tasks...`)
+  await asyncCleanup()
+  console.log('All done!')
+})
 ```
+
+You may call `adeiu` multiple times and from multiple places in your application. Handlers will be
+aggregated and invoked in parallel. This allows for small, focused shutdown handlers that can be
+co-located with the part of the application they are responsible for.
 
 ### Unregistering Handlers
 
 Adeiu returns a function that can be invoked to unregister a handler.
 
 ```ts
-import adeiu from '@darkobits/adeiu';
+import adeiu from '@darkobits/adeiu'
 
 const unregister = adeiu(() => {
-  // Handler implementation here.
-});
+  // Handler implementation.
+})
 
 // Un-register the handler.
-unregister();
+unregister()
 ```
 
 ### Customizing Signals
 
 Usually, responding to signals dynamically can be accomplished by inspecting the `signal` argument
-passed to your handler. However, if it is important that handlers are _only_ invoked for a particular
+passed to your handler. However, if it is important that handlers are _only_ installed for a particular
 signal, or if you'd like to respond to signals other than the defaults, you may optionally provide an
-array of signals as a second argument:
+array of signals:
 
 ```ts
-import adeiu from '@darkobits/adeiu';
+import adeiu from '@darkobits/adeiu'
 
 // Register callback that will _only_ be invoked on SIGINT:
 adeiu(() => {
   // SIGINT cleanup tasks.
-}, ['SIGINT']);
+}, { signals: ['SIGINT'] })
 ```
 
 ```ts
-import adeiu from '@darkobits/adeiu';
+import adeiu from '@darkobits/adeiu'
 
 // Register callback with the default signals _and_ SIGUSR1:
 adeiu(() => {
   // Custom cleanup tasks.
-}, [...adeiu.SIGNALS, 'SIGUSR1']);
+}, { signals: [...adeiu.SIGNALS, 'SIGUSR1'] })
 ```
-
-<br />
-<a href="#top">
-  <img src="https://user-images.githubusercontent.com/441546/189774318-67cf3578-f4b4-4dcc-ab5a-c8210fbb6838.png" style="max-width: 100%;">
-</a>

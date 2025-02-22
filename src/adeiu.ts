@@ -121,7 +121,7 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
       signalCallbacks.set(signal, [cb])
       // Since this is the first callback being registered for this signal,
       // install our handler for it.
-      process.prependOnceListener(signal, handler as NodeJS.SignalsListener)
+      process.prependListener(signal, handler as NodeJS.SignalsListener)
     } else {
       signalCallbacks.set(signal, [...callbacksForSignal, cb])
     }
@@ -140,7 +140,7 @@ export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = 
         signalCallbacks.set(signal, [])
         // This means we are un-registering the last remaining callback for this
         // signal, so uninstall our handler for it.
-        process.off(signal, handler as NodeJS.SignalsListener)
+        process.removeListener(signal, handler as NodeJS.SignalsListener)
       } else {
         signalCallbacks.set(signal, callbacksForSignal.filter(curCallback => curCallback !== cb))
       }

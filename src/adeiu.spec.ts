@@ -11,8 +11,8 @@ describe('adeiu', () => {
 
   const exitSpy = vi.spyOn(process, 'exit')
   const killSpy = vi.spyOn(process, 'kill')
-  const offSpy = vi.spyOn(process, 'off')
-  const prependOnceSpy = vi.spyOn(process, 'prependOnceListener')
+  const removeListenerSpy = vi.spyOn(process, 'removeListener')
+  const prependListenerSpy = vi.spyOn(process, 'prependListener')
   const stdErrWriteSpy = vi.spyOn(process.stderr, 'write')
 
   // Because we're mocking `process`, we need to do so just before our tests. As
@@ -25,7 +25,7 @@ describe('adeiu', () => {
     killSpy.mockImplementation(() => true as const)
     stdErrWriteSpy.mockImplementation(() => true)
 
-    prependOnceSpy.mockImplementation((eventName: string, listener: any) => {
+    prependListenerSpy.mockImplementation((eventName: string, listener: any) => {
       void emitter.once(eventName).then(() => listener(eventName)) // tslint:disable-line no-floating-promises
       return process
     })
@@ -43,7 +43,7 @@ describe('adeiu', () => {
     })
 
     it('should bind to termination events', () => {
-      const signals = new Set(prependOnceSpy.mock.calls.map((args: Array<any>) => args[0]))
+      const signals = new Set(prependListenerSpy.mock.calls.map((args: Array<any>) => args[0]))
 
       expect(signals.has('SIGINT')).toBe(true)
       expect(signals.has('SIGQUIT')).toBe(true)
@@ -60,7 +60,7 @@ describe('adeiu', () => {
 
     it('should unregister handlers when the last callback is unregistered', () => {
       unregister()
-      expect(offSpy).toHaveBeenCalledTimes(4)
+      expect(removeListenerSpy).toHaveBeenCalledTimes(4)
     })
 
     afterEach(() => {
@@ -74,23 +74,23 @@ describe('adeiu', () => {
     const otherCallback = vi.fn()
 
     it('should install the adeiu handler when the first user callback is registered', () => {
-      expect(prependOnceSpy).not.toHaveBeenCalled()
+      expect(prependListenerSpy).not.toHaveBeenCalled()
 
       // Register the first callback for this signal.
       adeiu(callback, {signals: [signal]})
 
       // Assert that we installed the handler.
-      expect(prependOnceSpy.mock.calls[0][0]).toBe(signal)
+      expect(prependListenerSpy.mock.calls[0][0]).toBe(signal)
 
       // Register another callback on the same signal.
       adeiu(otherCallback, {signals: [signal]})
 
       // Assert that we did not call process.once again.
-      expect(prependOnceSpy).toHaveBeenCalledTimes(1)
+      expect(prependListenerSpy).toHaveBeenCalledTimes(1)
     })
 
     it('should uninstall the adeiu handler when the last user callback is unregistered', () => {
-      expect(offSpy).not.toHaveBeenCalled()
+      expect(removeListenerSpy).not.toHaveBeenCalled()
 
       // Register both callbacks this signal.
       const unregister = adeiu(callback, {signals: [signal]})
@@ -100,13 +100,13 @@ describe('adeiu', () => {
       unregister()
 
       // Assert that we didn't uninstall the handler.
-      expect(offSpy).not.toHaveBeenCalled()
+      expect(removeListenerSpy).not.toHaveBeenCalled()
 
       // Uninstall the second handler.
       unregisterOther()
 
       // Assert that we uninstalled the handler for the signal.
-      expect(offSpy.mock.calls[0][0]).toBe(signal)
+      expect(removeListenerSpy.mock.calls[0][0]).toBe(signal)
     })
   })
 

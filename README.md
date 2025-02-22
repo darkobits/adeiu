@@ -43,13 +43,12 @@ Yet another POSIX signal handler.
 
 ## Features
 
-* Ensures provided functions are called before any other event listeners and are run concurrently,
+* Ensures provided handlers are called before any other event listeners and are run concurrently,
   minimizing shutdown time.
 * Works with any combination of synchronous and asynchronous functions.
-* Ensures a clean exit if all functions resolve/return.
-* Exits with an error if any functions reject/throw.
-* Ensures processes exit cleanly, even when they have asynchronous shut-down functions and the Node
-  debugger is in use. (See [this issue](https://github.com/nodejs/node/issues/7742))
+* Exits with code `0` if all handlers resolve/return.
+* Exits with an `AggregateError` if any handler rejects/throws.
+* Supports edge cases related to the Node debugger being attached to a process. (See [this issue](https://github.com/nodejs/node/issues/7742))
 
 ## Install
 

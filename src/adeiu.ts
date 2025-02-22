@@ -1,6 +1,3 @@
-import chalk from 'chalk'
-import ow from 'ow'
-
 /**
  * Signature of callbacks provided to `adeiu`.
  */
@@ -33,7 +30,16 @@ const SIGNALS: Array<NodeJS.Signals> = [
  * Tracks which signals we have registered process listeners for, and which user
  * callbacks should be invoked for each signal.
  */
-const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>()
+const signalCallbacks = new Map<NodeJS.Signals, Set<AdeiuCallback>>()
+
+/**
+ * Returns the `Set` of user-provided callbacks for the provided signal.
+ */
+function getCallbackSetForSignal(signal: NodeJS.Signals) {
+  // Initialize w new Set if needed.
+  if (!signalCallbacks.has(signal)) signalCallbacks.set(signal, new Set())
+  return signalCallbacks.get(signal) as Set<AdeiuCallback>
+}
 
 /**
  * Provided an `adeiu` callback and an error it threw, logs the error to
@@ -52,10 +58,20 @@ const signalCallbacks = new Map<NodeJS.Signals, Array<AdeiuCallback>>()
  */
 function writeErrorToStderr(cb: AdeiuCallback, signal: NodeJS.Signals, err?: Error) {
   if (err?.stack) {
+    const supportsColor = Boolean(
+      process.stdout.isTTY
+      // Check for NO_COLOR environment variable (color suppression standard)
+      && !process.env.NO_COLOR
+      // Check for FORCE_COLOR environment variable (color forcing standard)
+      || process.env.FORCE_COLOR
+    )
+
+    const red = (text: string) => (supportsColor ? `\u001B[31m${text}\u001B[0m` : text)
+
     const errType = err.constructor ? err.constructor.name : 'Error'
     const cbName = cb.name ? `${signal} handler  \`${cb.name}\`` : 'Anonymous callback'
     const stackLines = err.stack.split('\n')
-    stackLines[0] = `${chalk.red(`Error: [adeiu] ${cbName} threw:`)} ${errType}: ${err.message}`
+    stackLines[0] = `${red(`Error: [adeiu] ${cbName} threw:`)} ${errType}: ${err.message}`
     process.stderr.write(`${stackLines.join('\n')}\n`)
   }
 }
@@ -67,29 +83,26 @@ function writeErrorToStderr(cb: AdeiuCallback, signal: NodeJS.Signals, err?: Err
  */
 async function handler(signal: NodeJS.Signals) {
   // Get an array of user callbacks we need to invoke for the provided signal.
-  const callbacksForSignal = signalCallbacks.get(signal)
+  const callbackSetForSignal = getCallbackSetForSignal(signal)
 
-  // If this occurs, it means there is an error in our handler (un)installation
-  // logic.
-  if (!callbacksForSignal || callbacksForSignal.length === 0) {
+  // There is an error in our handler (un)installation logic; this handler
+  // should have been un-registered when the last remaining user callback for
+  // this signal was un-registered.
+  if (callbackSetForSignal.size === 0)
     throw new Error(`Unexpected error: Expected at least 1 callback for signal ${signal}, but found none.`)
-  }
 
-  // Map our array of functions into an array of promises that will resolve with
-  // `true` if the function returns/resolves and `false` if the function throws
-  // or rejects.
-  const results = await Promise.all(callbacksForSignal.map(async cb => {
+  let anyFailed = false
+
+  await Promise.all([...callbackSetForSignal].map(async cb => {
     try {
       await cb(signal)
-      return true
     } catch (err: any) {
+      anyFailed = true
       writeErrorToStderr(cb, signal, err)
-      return false
     }
   }))
 
-  if (results.includes(false)) {
-    // If any functions threw/rejected, exit with code 1.
+  if (anyFailed) {
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1)
   } else {
@@ -108,43 +121,41 @@ async function handler(signal: NodeJS.Signals) {
  */
 export default function adeiu(cb: AdeiuCallback, {signals = []}: AdeiuOptions = {}) {
   // Validate options.
-  ow(signals, 'signals', ow.array.ofType(ow.string))
+  signals.forEach(signal => {
+    if (typeof signal !== 'string') throw new TypeError(`Expected signal to be of type "string", got "${typeof signal}".`)
+    if (!signal.startsWith('SIG')) throw new Error(`Invalid signal: ${signal}`)
+  })
 
   // If the user provided a custom list of signals, use it. Otherwise, use the
   // default list.
-  const finalSignals = signals.length > 0 ? signals : SIGNALS
+  const resolvedSignals = signals.length > 0 ? signals : SIGNALS
 
-  finalSignals.forEach(signal => {
-    const callbacksForSignal = signalCallbacks.get(signal)
+  resolvedSignals.forEach(signal => {
+    const callbackSetForSignal = getCallbackSetForSignal(signal)
 
-    if (!callbacksForSignal || callbacksForSignal.length === 0) {
-      signalCallbacks.set(signal, [cb])
-      // Since this is the first callback being registered for this signal,
-      // install our handler for it.
+    // Since this is the first callback being registered for this signal,
+    // install our handler for it.
+    if (callbackSetForSignal.size === 0) {
       process.prependListener(signal, handler as NodeJS.SignalsListener)
-    } else {
-      signalCallbacks.set(signal, [...callbacksForSignal, cb])
     }
+
+    callbackSetForSignal.add(cb)
   })
 
+  // Un-register the provided callback from the indicated signals.
   return () => {
-    finalSignals.forEach(signal => {
-      const callbacksForSignal = signalCallbacks.get(signal)
+    for (const signal of resolvedSignals) {
+      const callbackSetForSignal = getCallbackSetForSignal(signal)
 
-      if (!callbacksForSignal || callbacksForSignal.length === 0) {
-        // User may have already called this function previously.
-        return
-      }
+      callbackSetForSignal.delete(cb)
 
-      if (callbacksForSignal.length === 1 && callbacksForSignal[0] === cb) {
-        signalCallbacks.set(signal, [])
-        // This means we are un-registering the last remaining callback for this
-        // signal, so uninstall our handler for it.
+      // If we are un-registering the last remaining callback for this signal,
+      // then we should also un-register our handler for that signal from the
+      // process' EventEmitter.
+      if (callbackSetForSignal.size === 0) {
         process.removeListener(signal, handler as NodeJS.SignalsListener)
-      } else {
-        signalCallbacks.set(signal, callbacksForSignal.filter(curCallback => curCallback !== cb))
       }
-    })
+    }
   }
 }
 

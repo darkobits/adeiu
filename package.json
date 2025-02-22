@@ -19,11 +19,6 @@
   "scripts": {
     "prepare": "nr prepare"
   },
-  "dependencies": {
-    "@darkobits/interop-import-default": "^1.0.0",
-    "chalk": "^5.4.1",
-    "ow": "^1.1.1"
-  },
   "devDependencies": {
     "@darkobits/ts": "0.24.0",
     "emittery": "^1.1.0",

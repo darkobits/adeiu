@@ -1,169 +1,166 @@
-import Emittery from 'emittery';
-import pWaitFor from 'p-wait-for';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import Emittery from 'emittery'
+import pWaitFor from 'p-wait-for'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import type adeiuType from './adeiu';
-
+import type adeiuType from './adeiu'
 
 describe('adeiu', () => {
-  const emitter = new Emittery();
+  const emitter = new Emittery()
 
-  let adeiu: typeof adeiuType;
+  let adeiu: typeof adeiuType
 
-  const exitSpy = vi.spyOn(process, 'exit');
-  const killSpy = vi.spyOn(process, 'kill');
-  const offSpy = vi.spyOn(process, 'off');
-  const prependOnceSpy = vi.spyOn(process, 'prependOnceListener');
-  const stdErrWriteSpy = vi.spyOn(process.stderr, 'write');
+  const exitSpy = vi.spyOn(process, 'exit')
+  const killSpy = vi.spyOn(process, 'kill')
+  const offSpy = vi.spyOn(process, 'off')
+  const prependOnceSpy = vi.spyOn(process, 'prependOnceListener')
+  const stdErrWriteSpy = vi.spyOn(process.stderr, 'write')
 
   // Because we're mocking `process`, we need to do so just before our tests. As
   // such, we also need to import the module being tested _after_ these mocks
   // have been set up to ensure the module gets the mocked version.
   beforeEach(async () => {
-    emitter.clearListeners();
+    emitter.clearListeners()
 
-    exitSpy.mockImplementation(() => undefined as never);
-    killSpy.mockImplementation(() => true as const);
-    stdErrWriteSpy.mockImplementation(() => true);
+    exitSpy.mockImplementation(() => undefined as never)
+    killSpy.mockImplementation(() => true as const)
+    stdErrWriteSpy.mockImplementation(() => true)
 
     prependOnceSpy.mockImplementation((eventName: string, listener: any) => {
-      void emitter.once(eventName).then(() => listener(eventName)); // tslint:disable-line no-floating-promises
-      return process;
-    });
+      void emitter.once(eventName).then(() => listener(eventName)) // tslint:disable-line no-floating-promises
+      return process
+    })
 
-    adeiu = (await import('./adeiu')).default;
-  });
+    adeiu = (await import('./adeiu')).default
+  })
 
   describe('common case', () => {
-    let unregister: any;
+    let unregister: any
 
     beforeEach(() => {
       unregister = adeiu(() => {
         // Empty block.
-      });
-    });
+      })
+    })
 
     it('should bind to termination events', () => {
-      const signals = new Set(prependOnceSpy.mock.calls.map((args: Array<any>) => args[0]));
+      const signals = new Set(prependOnceSpy.mock.calls.map((args: Array<any>) => args[0]))
 
-      expect(signals.has('SIGINT')).toBe(true);
-      expect(signals.has('SIGQUIT')).toBe(true);
-      expect(signals.has('SIGTERM')).toBe(true);
-      expect(signals.has('SIGUSR2')).toBe(true);
-    });
+      expect(signals.has('SIGINT')).toBe(true)
+      expect(signals.has('SIGQUIT')).toBe(true)
+      expect(signals.has('SIGTERM')).toBe(true)
+      expect(signals.has('SIGUSR2')).toBe(true)
+    })
 
     it('should call process.kill with the signal it received', async () => {
-      const SIGNAL = 'SIGINT';
-      await emitter.emit(SIGNAL);
-      await pWaitFor(() => killSpy.mock.calls.length > 0);
-      expect(killSpy.mock.calls[0][1]).toBe(SIGNAL);
-    });
+      const SIGNAL = 'SIGINT'
+      await emitter.emit(SIGNAL)
+      await pWaitFor(() => killSpy.mock.calls.length > 0)
+      expect(killSpy.mock.calls[0][1]).toBe(SIGNAL)
+    })
 
     it('should unregister handlers when the last callback is unregistered', () => {
-      unregister();
-      expect(offSpy).toHaveBeenCalledTimes(4);
-    });
+      unregister()
+      expect(offSpy).toHaveBeenCalledTimes(4)
+    })
 
     afterEach(() => {
-      unregister();
-    });
-  });
+      unregister()
+    })
+  })
 
   describe('registering with custom signals', () => {
-    const signal = 'SIGFOO' as NodeJS.Signals;
-    const callback = vi.fn();
-    const otherCallback = vi.fn();
-
+    const signal = 'SIGFOO' as NodeJS.Signals
+    const callback = vi.fn()
+    const otherCallback = vi.fn()
 
     it('should install the adeiu handler when the first user callback is registered', () => {
-      expect(prependOnceSpy).not.toHaveBeenCalled();
+      expect(prependOnceSpy).not.toHaveBeenCalled()
 
       // Register the first callback for this signal.
-      adeiu(callback, {signals: [signal]});
+      adeiu(callback, {signals: [signal]})
 
       // Assert that we installed the handler.
-      expect(prependOnceSpy.mock.calls[0][0]).toBe(signal);
+      expect(prependOnceSpy.mock.calls[0][0]).toBe(signal)
 
       // Register another callback on the same signal.
-      adeiu(otherCallback, {signals: [signal]});
+      adeiu(otherCallback, {signals: [signal]})
 
       // Assert that we did not call process.once again.
-      expect(prependOnceSpy).toHaveBeenCalledTimes(1);
-    });
+      expect(prependOnceSpy).toHaveBeenCalledTimes(1)
+    })
 
     it('should uninstall the adeiu handler when the last user callback is unregistered', () => {
-      expect(offSpy).not.toHaveBeenCalled();
+      expect(offSpy).not.toHaveBeenCalled()
 
       // Register both callbacks this signal.
-      const unregister = adeiu(callback, {signals: [signal]});
-      const unregisterOther = adeiu(otherCallback, {signals: [signal]});
+      const unregister = adeiu(callback, {signals: [signal]})
+      const unregisterOther = adeiu(otherCallback, {signals: [signal]})
 
       // Unregister the first callback.
-      unregister();
+      unregister()
 
       // Assert that we didn't uninstall the handler.
-      expect(offSpy).not.toHaveBeenCalled();
+      expect(offSpy).not.toHaveBeenCalled()
 
       // Uninstall the second handler.
-      unregisterOther();
+      unregisterOther()
 
       // Assert that we uninstalled the handler for the signal.
-      expect(offSpy.mock.calls[0][0]).toBe(signal);
-    });
-  });
+      expect(offSpy.mock.calls[0][0]).toBe(signal)
+    })
+  })
 
   describe('when a callback rejects/throws', () => {
-    let unregister: any;
+    let unregister: any
 
-    const err = new Error('Handler threw.');
+    const err = new Error('Handler threw.')
 
     describe('and the callback has a `name` property', () => {
       const badHandler = () => {
-        throw err;
-      };
+        throw err
+      }
 
       beforeEach(async () => {
-        unregister = adeiu(badHandler);
-        await emitter.emit('SIGINT');
-      });
+        unregister = adeiu(badHandler)
+        await emitter.emit('SIGINT')
+      })
 
       it('should call process.exit', () => {
-        expect(exitSpy).toHaveBeenCalled();
-      });
+        expect(exitSpy).toHaveBeenCalled()
+      })
 
       it('should log errors to stderr', () => {
-        expect(stdErrWriteSpy.mock.calls[0][0]).toMatch(err.message);
-      });
+        expect(stdErrWriteSpy.mock.calls[0][0]).toMatch(err.message)
+      })
 
       it('should include the functions name', () => {
-        expect(stdErrWriteSpy.mock.calls[0][0]).toMatch('badHandler');
-      });
-    });
+        expect(stdErrWriteSpy.mock.calls[0][0]).toMatch('badHandler')
+      })
+    })
 
     describe('and the callback does not have a `name` property', () => {
       beforeEach(async () => {
         unregister = adeiu(() => {
-          throw err;
-        });
+          throw err
+        })
 
-        await emitter.emit('SIGINT');
-      });
+        await emitter.emit('SIGINT')
+      })
 
       it('should indicate an anonymous function', () => {
-        expect(stdErrWriteSpy.mock.calls[0][0]).toMatch('Anonymous');
-      });
-    });
-
+        expect(stdErrWriteSpy.mock.calls[0][0]).toMatch('Anonymous')
+      })
+    })
 
     afterEach(() => {
-      unregister();
-    });
-  });
+      unregister()
+    })
+  })
 
   afterEach(() => {
-    vi.resetAllMocks();
-    vi.resetModules();
+    vi.resetAllMocks()
+    vi.resetModules()
     // jest.resetAllMocks();
     // jest.resetModules();
-  });
-});
+  })
+})

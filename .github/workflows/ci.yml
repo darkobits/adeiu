@@ -1,11 +1,7 @@
 name: ci
 on:
-  push:
-    paths-ignore:
-      - '**.md'
-  pull_request:
-    paths-ignore:
-      - '**.md'
+  - push
+  - pull_request
 env:
   FORCE_COLOR: 3
 concurrency:
@@ -17,23 +13,27 @@ concurrency:
 jobs:
   ci:
     name: CI
-    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
+    # Skip building tags; an identical job for the commit to which the tag
+    # points will be triggered anyway.
+    if: github.ref_type != 'tag'
     steps:
-      - name: Clone
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Prepare
-        uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: lts/*
           cache: npm
-      - name: Install
+      - name: Prepare
         run: npm clean-install
       - name: Build
         run: npx nr build
-      - name: Run Tests
+      - name: Test
         run: npx nr test.coverage
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

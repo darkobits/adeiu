@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/darkobits/adeiu/compare/v0.4.4...v0.5.0) (2025-02-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* `adeiu.SIGNALS` has been moved to a named export, `DEFAULT_SIGNALS`.
+
+Before:
+
+```ts
+import adeiu from '@darkobits/adeiu'
+
+// Default signals.
+adeiu.SIGNALS
+```
+
+After:
+
+```ts
+import adeiu, { DEFAULT_SIGNALS } from '@darkobits/adeiu'
+
+// Default signals.
+DEFAULT_SIGNALS
+```
+
+* Export default signals. ([ecbf785](https://github.com/darkobits/adeiu/commit/ecbf785df46e0f99c56cccc239e82cd46be68ca9))
+
 ### [0.4.4](https://github.com/darkobits/adeiu/compare/v0.4.3...v0.4.4) (2025-02-22)
 
 ### [0.4.3](https://github.com/darkobits/adeiu/compare/v0.4.2...v0.4.3) (2025-02-22)

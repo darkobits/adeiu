@@ -1,21 +1,6 @@
-import { constants } from 'node:os'
+import { logErrors, rejectAfter, signalToExitCode  } from 'utils'
 
-export type AdeiuHandler = (signal: NodeJS.Signals) => void | Promise<void>;
-
-export interface AdeiuOptions {
-  /**
-   * (Optional) Array of signals that the provided handler should be invoked
-   * for. These signals are _not_ merged with the defaults, so each desired
-   * signal must be explicitly enumerated.
-   */
-  signals?: Array<NodeJS.Signals>
-  /**
-   * Maximum amount of time (in milliseconds) that the handler may run for
-   * before it will be canceled. If this option is omitted or undefined, no
-   * timeout will be enforced.
-   */
-  timeout?: number | undefined
-}
+import type { AdeiuHandler, AdeiuOptions } from 'types'
 
 export const DEFAULT_SIGNALS: Array<NodeJS.Signals> = [
   'SIGINT',
@@ -37,44 +22,9 @@ const signalHandlers = new Map<NodeJS.Signals, Map<AdeiuHandler, AdeiuOptions>>(
  */
 const signalsHandled: Partial<Record<NodeJS.Signals, boolean>> = {}
 
-async function rejectAfter(timeout: number, reason: any) {
-  return new Promise<never>((resolve, reject) => {
-    setTimeout(() => reject(reason), timeout)
-  })
-}
-
-function signalToExitCode(signal: NodeJS.Signals) {
-  const signalNum = constants.signals[signal]
-  return signalNum ? 128 + signalNum : undefined
-}
-
 function getHandlersForSignal(signal: NodeJS.Signals) {
   if (!signalHandlers.has(signal)) signalHandlers.set(signal, new Map())
   return signalHandlers.get(signal) as Map<AdeiuHandler, AdeiuOptions>
-}
-
-function logErrors(signal: NodeJS.Signals, errors: Array<[Error, AdeiuHandler]>) {
-  const supportsColor = Boolean(
-    process.stdout.isTTY
-    // Check for NO_COLOR environment variable (color suppression standard)
-    && !process.env.NO_COLOR
-    // Check for FORCE_COLOR environment variable (color forcing standard)
-    || process.env.FORCE_COLOR
-  )
-
-  const red = (text: string) => (supportsColor ? `\u001B[31m${text}\u001B[0m` : text)
-
-  process.stderr.write(red(`Encountered the following errors while responding to ${signal}:\n\n`))
-
-  errors.forEach(([error, handler]) => {
-    const handlerName = handler.name || 'anonymous'
-    const stackLines = error.stack?.split('\n') ?? [error.message]
-    process.stderr.write(`${stackLines.map((line, lineNumber) => {
-      return lineNumber === 0
-        ? red(`• ${line} (via handler: ${handlerName})`)
-        : line
-    }).join('\n')}\n\n`)
-  })
 }
 
 async function handleSignal(signal: NodeJS.Signals) {
@@ -140,31 +90,31 @@ export default function adeiu(handler: AdeiuHandler, options: AdeiuOptions = {})
   if (typeof timeout !== 'number' && timeout !== undefined)
     throw new TypeError(`Expected type of "timeout" to be "number" or "undefined", got "${typeof timeout}".`)
 
-  signals.forEach(signal => {
+  for (const signal of signals) {
     const handlersForSignal = getHandlersForSignal(signal)
-
-    // Since this is the first handler being registered for this signal,
-    // install our handler for it.
-    if (handlersForSignal.size === 0) {
-      process.prependListener(signal, handleSignal as NodeJS.SignalsListener)
-    }
-
     handlersForSignal.set(handler, options)
-  })
 
-  // Un-register the provided handler from the indicated signals.
-  return () => {
+    // If this is the first handler being registered for this signal,
+    // install our listener.
+    if (handlersForSignal.size === 1) process.prependListener(
+      signal,
+      handleSignal as NodeJS.SignalsListener
+    )
+  }
+
+  const unregister = () => {
     for (const signal of signals) {
       const handlersForSignal = getHandlersForSignal(signal)
-
       handlersForSignal.delete(handler)
 
-      // If we are un-registering the last remaining handler for this signal,
-      // then we should also un-register our handler for that signal from the
-      // process' EventEmitter.
-      if (handlersForSignal.size === 0) {
-        process.removeListener(signal, handleSignal as NodeJS.SignalsListener)
-      }
+      // If this is the last handler being un-registered for this signal,
+      // uninstall our listener.
+      if (handlersForSignal.size === 0) process.removeListener(
+        signal,
+        handleSignal as NodeJS.SignalsListener
+      )
     }
   }
+
+  return unregister
 }

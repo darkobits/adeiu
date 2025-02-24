@@ -59,8 +59,12 @@ npm i @darkobits/adeiu
 
 ## Use
 
-Adeiu accepts an asynchronous or synchronous handler function. By default, the handler will be
-registered to respond to the following signals:
+```ts
+adeiu(handler: AdeiuHandler, options?: AdeiuOptions): () => void
+```
+
+Adeiu accepts an asynchronous or synchronous handler function and returns an unregister function. By
+default, the handler will be registered to respond to the following signals:
 
 * `SIGINT`
 * `SIGQUIT`
@@ -70,32 +74,14 @@ registered to respond to the following signals:
 ```ts
 import adeiu from '@darkobits/adeiu'
 
-adeiu(async signal => {
-  console.log(`Received signal ${signal}; performing shut-down tasks...`)
+const unregister = adeiu(async signal => {
+  console.log(`Received signal ${signal}; shutting down...`)
   await asyncCleanup()
-  console.log('All done!')
+  console.log('Done.')
 })
 ```
 
-You may call `adeiu` multiple times and from multiple places in your application. Handlers will be
-aggregated and invoked in parallel. This allows for small, focused shutdown handlers that can be
-co-located with the part of the application they are responsible for or where their data requirements
-are.
-
-### Unregistering Handlers
-
-Adeiu returns a function that can be invoked to unregister a handler.
-
-```ts
-import adeiu from '@darkobits/adeiu'
-
-const unregister = adeiu(() => {
-  // Handler implementation.
-})
-
-// Un-register the handler.
-unregister()
-```
+If multiple handlers are registered, they will be invoked in parallel.
 
 ### Customizing Signals
 
@@ -107,17 +93,31 @@ array of signals:
 ```ts
 import adeiu from '@darkobits/adeiu'
 
-// Register callback that will _only_ be invoked on SIGINT:
+// Register handler that will _only_ be invoked on SIGINT:
 adeiu(() => {
-  // SIGINT cleanup tasks.
+  // ...
 }, { signals: ['SIGINT'] })
 ```
 
 ```ts
 import adeiu, { DEFAULT_SIGNALS } from '@darkobits/adeiu'
 
-// Register callback with the default signals _and_ SIGUSR1:
+// Register handler with the default signals _and_ SIGUSR1:
 adeiu(() => {
-  // Custom cleanup tasks.
+  // ...
 }, { signals: [...DEFAULT_SIGNALS, 'SIGUSR1'] })
+```
+
+### Specifying a Timeout
+
+By default, handlers will have no timeout imposed. If, however, you wish to only wait a specific amount
+of time for a handler to run, the `timeout` option may be used:
+
+```ts
+import adeiu from '@darkobits/adeiu'
+
+// Register a handler that will have 5 seconds to execute.
+adeiu(() => {
+  // ...
+}, { timeout: 5000 })
 ```

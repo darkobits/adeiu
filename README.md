@@ -23,6 +23,11 @@
     src="https://img.shields.io/github/actions/workflow/status/darkobits/adeiu/ci.yml?style=flat-square"
   ></a>
   <a
+    href="https://app.codecov.io/gh/darkobits/adeiu"
+  ><img
+    src="https://img.shields.io/codecov/c/github/darkobits/adeiu?style=flat-square&color=%2346CC10"
+  ></a>
+  <a
     href="https://depfu.com/repos/github/darkobits/adeiu"
   ><img
     src="https://img.shields.io/depfu/darkobits/adeiu?style=flat-square"

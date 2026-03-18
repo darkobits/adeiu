@@ -44,6 +44,10 @@
   ></a>
 </p>
 
+> [!WARNING]
+> Consult [`AGELESS`](./AGELESS) to determine if you are permitted to use this
+> software where you live.
+
 Adeiu is a POSIX signal handler designed to for applications with asynchronous cleanup / shutdown
 requirements, such as gracefully shutting-down an HTTP server or closing a database connection.
 
